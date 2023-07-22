@@ -120,62 +120,83 @@ function update() {
         jugador.y += gravity * 5;
     }
 
-       // New collision detection logic
-       let isCollidingTop = false;
-       let isCollidingBottom = false;
-       let isCollidingLeft = false;
-       let isCollidingRight = false;
-       let collidingElement = null; // Variable to store the colliding element
-   
-       for (const element of elements) {
-           if (element.collision && checkCollision(jugador, element)) {
-               const ab = jugador.getBounds();
-               const bb = element.getBounds();
-   
-               // Check collision from the top
-               if (ab.y + ab.height >= bb.y && ab.y + ab.height - jugador.jumpVelocity <= bb.y) {
-                   isCollidingTop = true;
-               }
-   
-               // Check collision from the bottom
-               if (ab.y <= bb.y + bb.height && ab.y - jugador.jumpVelocity >= bb.y + bb.height) {
-                   isCollidingBottom = true;
-                   collidingElement = element; // Store the colliding element
-               }
-   
-               // Check collision from the left
-               if (ab.x + ab.width >= bb.x && ab.x + ab.width - jugador.jumpVelocity <= bb.x) {
-                   isCollidingLeft = true;
-               }
-   
-               // Check collision from the right
-               if (ab.x <= bb.x + bb.width && ab.x - jugador.jumpVelocity >= bb.x + bb.width) {
-                   isCollidingRight = true;
-               }
-           }
-       }
-   
-       // Handle collisions
-       if (isCollidingTop) {
-           jugador.y = collidingElement.y - jugador.height;
-           isJumping = false;
-           jugador.jumpVelocity = 0;
-       }
-   
-       if (isCollidingBottom) {
-           jugador.y = collidingElement.y + collidingElement.height;
-           isJumping = false;
-           jugador.jumpVelocity = 0;
-       }
-   
-       if (isCollidingLeft) {
-           jugador.x = collidingElement.x - jugador.width;
-       }
-   
-       if (isCollidingRight) {
-           jugador.x = collidingElement.x + collidingElement.width;
-       }
-   }
+
+   // New collision detection logic
+let isCollidingTop = false;
+let isCollidingBottom = false;
+let isCollidingLeft = false;
+let isCollidingRight = false;
+let collidingElement = null; // Variable to store the colliding element
+
+for (const element of elements) {
+    if (element.collision && checkCollision(jugador, element)) {
+        const ab = jugador.getBounds();
+        const bb = element.getBounds();
+
+        // Check collision from the top
+        if (ab.y + ab.height >= bb.y && ab.y + ab.height - jugador.jumpVelocity <= bb.y) {
+            isCollidingTop = true;
+        }
+
+        // Check collision from the bottom
+        if (ab.y <= bb.y + bb.height && ab.y - jugador.jumpVelocity >= bb.y + bb.height) {
+            isCollidingBottom = true;
+        }
+
+        // Check collision from the left
+        if (ab.x + ab.width >= bb.x && ab.x + ab.width - jugador.jumpVelocity <= bb.x) {
+            isCollidingLeft = true;
+        }
+
+        // Check collision from the right
+        if (ab.x <= bb.x + bb.width && ab.x - jugador.jumpVelocity >= bb.x + bb.width) {
+            isCollidingRight = true;
+        }
+
+        // Update the colliding element
+        collidingElement = element;
+    }
+}
+
+// Handle collisions
+if (isCollidingTop) {
+    jugador.y = collidingElement.y - jugador.height; // Use collidingElement instead of element
+    isJumping = false;
+    jugador.jumpVelocity = 0;
+}
+
+if (isCollidingBottom) {
+    jugador.y = collidingElement.y + collidingElement.height; // Use collidingElement instead of element
+    isJumping = false;
+    jugador.jumpVelocity = 0;
+}
+
+if (isCollidingLeft) {
+    jugador.x = collidingElement.x - jugador.width; // Use collidingElement instead of element
+}
+
+if (isCollidingRight) {
+    jugador.x = collidingElement.x + collidingElement.width; // Use collidingElement instead of element
+}
+    // Additional code for preventing wrapping around to the top
+    const stageWidth = app.screen.width;
+    const playerWidth = jugador.width;
+
+    // Check if the player is at the left edge of the screen
+    if (jugador.x <= 0) {
+        jugador.x = 0;
+    }
+
+    // Check if the player is at the right edge of the screen
+    if (jugador.x >= stageWidth - playerWidth) {
+        jugador.x = stageWidth - playerWidth;
+    }
+
+    // Check if the player is colliding with an element on the right side
+    if (isCollidingRight && collidingElement) {
+        jugador.x = collidingElement.x + collidingElement.width;
+    }
+}
 
 
 
