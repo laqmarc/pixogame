@@ -157,7 +157,7 @@ for (const element of elements) {
         collidingElement = element;
     }
 }
-
+  
 // Handle collisions
 if (isCollidingTop) {
     jugador.y = collidingElement.y - jugador.height; // Use collidingElement instead of element
