@@ -4,6 +4,9 @@ const app = new PIXI.Application({
     height: 600,
     backgroundColor: 0xCCCCCC, // Set background color to light gray
 });
+const canvas = app.view;
+canvas.setAttribute('willReadFrequently', 'true');
+
 document.body.appendChild(app.view);
 
 // Load the player texture and animation frames
@@ -33,6 +36,26 @@ const jumpStrength = 10; // Jump force
 let isJumping = false; // Flag to track if the player is jumping
 const gravity = 0.5; // Gravity force
 
+// timer
+let isTimerRunning = false; // Flag to track if the timer is running
+let startTime = 0; // Variable to store the starting time
+let timerText; // PIXI.Text object to display the timer
+
+// Create a colored point representing the win point
+const winX = 196;
+const winY = 0;
+const winPoint = new PIXI.Graphics();
+const pointSize = 10;
+const pointColor = 0xFFFF00; // You can change this to any other color you want
+winPoint.beginFill(pointColor);
+winPoint.drawRect(0, 0, pointSize, pointSize);
+winPoint.endFill();
+winPoint.position.set(winX, winY);
+
+// Add the win point to the stage
+app.stage.addChild(winPoint);
+
+
 // Keyboard events
 const keys = {};
 document.addEventListener("keydown", onKeyDown);
@@ -51,6 +74,78 @@ function onKeyUp(event) {
     keys[event.keyCode] = false;
 }
 
+// Function to get the color of a pixel at a given position (x, y) in the canvas
+function getPixelColor(x, y) {
+    const context = app.view.getContext("2d");
+    const pixel = context.getImageData(x, y, 1, 1);
+    const data = pixel.data;
+    const color = (data[0] << 16) | (data[1] << 8) | data[2];
+    return color;
+}
+
+
+// Function to check if the player has won
+function checkWinCondition() {
+    // Check if the player's position is within a range of the winning coordinates
+    if (
+        jugador.x >= winX - 2 && // Adjust the range as needed
+        jugador.x <= winX + 2 &&
+        jugador.y >= winY - 2 && // Adjust the range as needed
+        jugador.y <= winY + 2
+    ) {
+        // Start the timer if it's not already running
+        if (!isTimerRunning) {
+            isTimerRunning = true;
+            startTime = Date.now(); // Store the current timestamp as the starting time
+        }
+
+        // Create a "You Win!" text
+        const winText = new PIXI.Text("Has guanyat!", {
+            fontSize: 48,
+            fill: 0xffffff, // White color
+            fontWeight: 'bold',
+            align: 'center',
+        });
+        winText.anchor.set(0.5);
+        winText.x = app.screen.width / 2;
+        winText.y = app.screen.height / 2;
+
+        // Add the "You Win" text to the stage
+        app.stage.addChild(winText);
+
+        // Stop the game ticker to freeze the game
+        app.ticker.stop();
+    }
+}
+
+
+
+function initTimerText() {
+    timerText = new PIXI.Text("Temps: 0 segons", {
+        fontSize: 24,
+        fill: 0xffffff,
+        fontWeight: 'bold',
+    });
+    timerText.x = 600;
+    timerText.y = 20;
+    app.stage.addChild(timerText);
+
+    // Start the timer by setting the flag to true and updating the start time
+    isTimerRunning = true;
+    startTime = Date.now();
+}
+ 
+
+
+function updateTimerText() {
+    if (isTimerRunning) {
+        const currentTime = Date.now();
+        const elapsedTimeInSeconds = Math.floor((currentTime - startTime) / 1000); // Corrected calculation
+        timerText.text = `Temps: ${elapsedTimeInSeconds} segons`;
+    }
+}
+
+
 // Update function
 function update() {
     // Move the player based on keyboard input
@@ -61,6 +156,7 @@ function update() {
         jugador.x += playerSpeed;
     }
 
+    // console.log(jugador.x + " " + jugador.y)
     // Jumping logic
     if (isJumping) {
         // Apply jump force
@@ -121,63 +217,63 @@ function update() {
     }
 
 
-   // New collision detection logic
-let isCollidingTop = false;
-let isCollidingBottom = false;
-let isCollidingLeft = false;
-let isCollidingRight = false;
-let collidingElement = null; // Variable to store the colliding element
+    // New collision detection logic
+    let isCollidingTop = false;
+    let isCollidingBottom = false;
+    let isCollidingLeft = false;
+    let isCollidingRight = false;
+    let collidingElement = null; // Variable to store the colliding element
 
-for (const element of elements) {
-    if (element.collision && checkCollision(jugador, element)) {
-        const ab = jugador.getBounds();
-        const bb = element.getBounds();
+    for (const element of elements) {
+        if (element.collision && checkCollision(jugador, element)) {
+            const ab = jugador.getBounds();
+            const bb = element.getBounds();
 
-        // Check collision from the top
-        if (ab.y + ab.height >= bb.y && ab.y + ab.height - jugador.jumpVelocity <= bb.y) {
-            isCollidingTop = true;
+            // Check collision from the top
+            if (ab.y + ab.height >= bb.y && ab.y + ab.height - jugador.jumpVelocity <= bb.y) {
+                isCollidingTop = true;
+            }
+
+            // Check collision from the bottom
+            if (ab.y <= bb.y + bb.height && ab.y - jugador.jumpVelocity >= bb.y + bb.height) {
+                isCollidingBottom = true;
+            }
+
+            // Check collision from the left
+            if (ab.x + ab.width >= bb.x && ab.x + ab.width - jugador.jumpVelocity <= bb.x) {
+                isCollidingLeft = true;
+            }
+
+            // Check collision from the right
+            if (ab.x <= bb.x + bb.width && ab.x - jugador.jumpVelocity >= bb.x + bb.width) {
+                isCollidingRight = true;
+            }
+
+            // Update the colliding element
+            collidingElement = element;
         }
-
-        // Check collision from the bottom
-        if (ab.y <= bb.y + bb.height && ab.y - jugador.jumpVelocity >= bb.y + bb.height) {
-            isCollidingBottom = true;
-        }
-
-        // Check collision from the left
-        if (ab.x + ab.width >= bb.x && ab.x + ab.width - jugador.jumpVelocity <= bb.x) {
-            isCollidingLeft = true;
-        }
-
-        // Check collision from the right
-        if (ab.x <= bb.x + bb.width && ab.x - jugador.jumpVelocity >= bb.x + bb.width) {
-            isCollidingRight = true;
-        }
-
-        // Update the colliding element
-        collidingElement = element;
     }
-}
 
-// Handle collisions
-if (isCollidingTop) {
-    jugador.y = collidingElement.y - jugador.height; // Use collidingElement instead of element
-    isJumping = false;
-    jugador.jumpVelocity = 0;
-}
+    // Handle collisions
+    if (isCollidingTop) {
+        jugador.y = collidingElement.y - jugador.height; // Use collidingElement instead of element
+        isJumping = false;
+        jugador.jumpVelocity = 0;
+    }
 
-if (isCollidingBottom) {
-    jugador.y = collidingElement.y + collidingElement.height; // Use collidingElement instead of element
-    isJumping = false;
-    jugador.jumpVelocity = 0;
-}
+    if (isCollidingBottom) {
+        jugador.y = collidingElement.y + collidingElement.height; // Use collidingElement instead of element
+        isJumping = false;
+        jugador.jumpVelocity = 0;
+    }
 
-if (isCollidingLeft) {
-    jugador.x = collidingElement.x - jugador.width; // Use collidingElement instead of element
-}
+    if (isCollidingLeft) {
+        jugador.x = collidingElement.x - jugador.width; // Use collidingElement instead of element
+    }
 
-if (isCollidingRight) {
-    jugador.x = collidingElement.x + collidingElement.width; // Use collidingElement instead of element
-}
+    if (isCollidingRight) {
+        jugador.x = collidingElement.x + collidingElement.width; // Use collidingElement instead of element
+    }
     // Additional code for preventing wrapping around to the top
     const stageWidth = app.screen.width;
     const playerWidth = jugador.width;
@@ -196,12 +292,34 @@ if (isCollidingRight) {
     if (isCollidingRight && collidingElement) {
         jugador.x = collidingElement.x + collidingElement.width;
     }
+
+
+
+    // Call the updateTimerText function
+    updateTimerText();
+
+    // Check collision with each element and handle collisions
+    for (const element of elements) {
+        if (element.collision && checkCollision(jugador, element)) {
+            // Stop the player from falling and set the player's position to the top of the element
+            jugador.y = element.y - jugador.height;
+            isJumping = false;
+            jugador.jumpVelocity = 0;
+        }
+    }
+
+    // Call the checkWinCondition function
+    checkWinCondition();
 }
 
+// Call initTimerText to add the timer text to the stage
+initTimerText();
 
-
-// Add the update function to the application's ticker
-app.ticker.add(update);
+// Add the update function and updateTimerText function to the application's ticker
+app.ticker.add(() => {
+    update();
+    updateTimerText(); // Move the updateTimerText function call here to update the timer continuously
+});
 
 // Create elements array to store platforms
 const elements = [];
@@ -220,13 +338,61 @@ function createElement(x, y, color, width, height) {
     return element;
 }
 
-// Example elements
-const element1 = createElement(100, 500, 0x00FF00, 80, 50);
-const element2 = createElement(300, 450, 0xFF0000, 100, 50);
+// Create elements array to store platforms
 
-// Add elements to the elements array
-elements.push(element1);
-elements.push(element2);
+
+// Platform data objects with position and size information
+const platformData = [{
+        x: 100,
+        y: 500,
+        color: 0x00FF00,
+        width: 80,
+        height: 50
+    },
+    {
+        x: 300,
+        y: 450,
+        color: 0xFF0000,
+        width: 100,
+        height: 50
+    },
+    {
+        x: 400,
+        y: 330,
+        color: 0xFF00FF,
+        width: 80,
+        height: 50
+    },
+    {
+        x: 550,
+        y: 250,
+        color: 0xFF0000,
+        width: 150,
+        height: 30
+    },
+    {
+        x: 350,
+        y: 150,
+        color: 0xFF0000,
+        width: 50,
+        height: 30
+    },
+    {
+        x: 150,
+        y: 50,
+        color: 0x000000,
+        width: 80,
+        height: 30
+    },
+
+    // Add more platform data objects here as needed
+];
+
+// Create platforms using a for loop
+for (const data of platformData) {
+    const element = createElement(data.x, data.y, data.color, data.width, data.height);
+    elements.push(element);
+}
 
 // Collision detection function
 function checkCollision(spriteA, spriteB) {
@@ -250,19 +416,3 @@ function checkCollision(spriteA, spriteB) {
 
     return isCollidingFromTop || isCollidingFromBottom || isCollidingFromLeft || isCollidingFromRight;
 }
-
-
-
-
-// Main loop for collision detection
-app.ticker.add(() => {
-    // Check collision with each element
-    for (const element of elements) {
-        if (element.collision && checkCollision(jugador, element)) {
-            // Stop the player from falling and set the player's position to the top of the element
-            jugador.y = element.y - jugador.height;
-            isJumping = false;
-            jugador.jumpVelocity = 0;
-        }
-    }
-});
