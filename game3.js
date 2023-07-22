@@ -71,9 +71,52 @@ function update() {
         if (jugador.y >= 550) { // Adjust this value based on the ground level
             jugador.y = 550; // Set the player back to the ground level
             isJumping = false; // Reset the jump flag
+            jugador.jumpVelocity = 0; // Reset the jump velocity
+        }
+    } else {
+        // Apply gravity when the player is not jumping
+        jugador.y += gravity;
+
+        // Check if the player has reached the ground
+        if (jugador.y >= 550) { // Adjust this value based on the ground level
+            jugador.y = 550; // Set the player back to the ground level
         }
     }
+        // Check if the player is above any element
+        let isAboveElement = false;
+        for (const element of elements) {
+            if (element.collision && checkCollision(jugador, element)) {
+                isAboveElement = true;
+                break;
+            }
+        }
+    
+        // Apply gravity when the player is not jumping and not above any element
+        if (!isJumping && !isAboveElement) {
+            isFalling = true;
+            jugador.y += gravity;
+        }
+    
+        // Check if the player has reached the ground or is above an element
+        if (jugador.y >= 600) { // Adjust this value based on the ground level
+            jugador.y = 600; // Set the player back to the ground level
+            isJumping = false; // Reset the jump flag
+            jugador.jumpVelocity = 0; // Reset the jump velocity
+            isFalling = false; // Reset the falling flag when reaching the ground
+        }
+    
+        // Reset the falling flag when the player is above an element
+        if (isAboveElement) {
+            isFalling = false;
+        }
+    
+        // Adjust the gravity when falling outside an element
+        if (isFalling) {
+            jugador.y += gravity * 5;
+        }
 }
+
+
 
 // Add the update function to the application's ticker
 app.ticker.add(update);
