@@ -101,21 +101,21 @@ function checkElementCollision(sprite, elements) {
 
 
 function update() {
+    // Initialize the collisionY variable
+    let collisionY = player.y;
+
     // Check for collisions with elements
-    const collisionY = checkElementCollision(sprite, elements);
+    collisionY = checkElementCollision(player, elements);
     if (collisionY !== undefined) {
         // Stop the player from falling
-        sprite.velocity.y = 0;
+        player.velocity.y = 0;
         // Set the player's y position to the top of the element
-        sprite.y = collisionY - sprite.height + 1;
+        player.y = collisionY - player.height + 1;
     }
 
     // Update the player's position
     player.x += player.velocity.x;
     player.y += player.velocity.y;
-
-
-    
 }
 
 // Añadimos variables para rastrear el estado del movimiento y la dirección anterior
