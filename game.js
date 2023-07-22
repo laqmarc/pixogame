@@ -86,37 +86,40 @@ function checkCollision(spriteA, element) {
 }
 function checkElementCollision(sprite, elements) {
     for (const element of elements) {
-        const collisionY = checkCollision(sprite, element);
-        if (collisionY !== undefined) {
-            // Stop the player from falling
-            sprite.velocity.y = 0;
-            // Set the player's y position to the top of the element
-            sprite.y = collisionY - sprite.height + 1;
-            return collisionY;
+        if (element.canStandOn) {
+            const collisionY = checkCollision(sprite, element.sprite);
+            if (collisionY !== undefined) {
+                // Stop the player from falling
+                sprite.velocity.y = 0;
+                // Set the player's y position to the top of the element
+                sprite.y = collisionY - sprite.height;
+                return true;
+            }
         }
     }
-
-    return undefined;
+    return false;
 }
-
 
 function update() {
     // Initialize the collisionY variable
-    let collisionY = player.y;
+    let collisionY = jugador.y;
 
     // Check for collisions with elements
-    collisionY = checkElementCollision(player, elements);
-    if (collisionY !== undefined) {
-        // Stop the player from falling
-        player.velocity.y = 0;
+    onGround = checkElementCollision(jugador, elements);
+    if (onGround) {
         // Set the player's y position to the top of the element
-        player.y = collisionY - player.height + 1;
+        jugador.y = collisionY - jugador.height;
+        playerVelocity.y = 0;
+    } else {
+        // Apply gravity to the player (only if not on top of an element)
+        playerVelocity.y += gravity;
     }
 
     // Update the player's position
-    player.x += player.velocity.x;
-    player.y += player.velocity.y;
+    jugador.x += playerVelocity.x;
+    jugador.y += playerVelocity.y;
 }
+
 
 // Añadimos variables para rastrear el estado del movimiento y la dirección anterior
 let isMoving = false;
@@ -124,14 +127,17 @@ let prevPlayerDirection = 0;
 let isFirstDirectionChange = true;
 
 function juegoLoop(delta) {
-    // Update player position based on velocity
-    jugador.x += playerVelocity.x;
-    jugador.y += playerVelocity.y;
+       // Check for collisions with elements and update player's onGround status
+       onGround = checkElementCollision(jugador, elements);
 
-    // Apply gravity to the player (only if not on top of an element)
-    if (!onGround) {
-        playerVelocity.y += gravity;
-    }
+       // Apply gravity to the player (only if not on top of an element)
+       if (!onGround) {
+           playerVelocity.y += gravity;
+       }
+   
+       // Update player position based on velocity
+       jugador.x += playerVelocity.x;
+       jugador.y += playerVelocity.y;
 
     // Check if the player is on an element that can be stood on
     let isOnElement = false;
@@ -360,10 +366,10 @@ function iniciarJuego() {
 
     const elementConfigs = [{
             x: 0,
-            y: 550, // Adjust the y value so the element is above the ground
+            y: 600, // Adjust the y value so the element is above the ground
             color: 0x00FF00, // Green color
             width: 80,
-            height: 50,
+            height: 10,
             borderRadius: 10,
             canStandOn: true
         },
