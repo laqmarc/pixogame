@@ -41,6 +41,21 @@ let isTimerRunning = false; // Flag to track if the timer is running
 let startTime = 0; // Variable to store the starting time
 let timerText; // PIXI.Text object to display the timer
 
+// Create a colored point representing the win point
+const winX = 196;
+const winY = 0;
+const winPoint = new PIXI.Graphics();
+const pointSize = 10;
+const pointColor = 0xFFFF00; // You can change this to any other color you want
+winPoint.beginFill(pointColor);
+winPoint.drawRect(0, 0, pointSize, pointSize);
+winPoint.endFill();
+winPoint.position.set(winX, winY);
+
+// Add the win point to the stage
+app.stage.addChild(winPoint);
+
+
 // Keyboard events
 const keys = {};
 document.addEventListener("keydown", onKeyDown);
@@ -71,23 +86,20 @@ function getPixelColor(x, y) {
 
 // Function to check if the player has won
 function checkWinCondition() {
-    // Define the X and Y coordinates for winning
-    const winX = 196;
-    const winY = 2;
-
     // Check if the player's position is within a range of the winning coordinates
     if (
-        jugador.x >= winX - 5 && // Adjust the range as needed
-        jugador.x <= winX + 5 &&
-        jugador.y >= winY - 5 && // Adjust the range as needed
-        jugador.y <= winY + 5
+        jugador.x >= winX - 2 && // Adjust the range as needed
+        jugador.x <= winX + 2 &&
+        jugador.y >= winY - 2 && // Adjust the range as needed
+        jugador.y <= winY + 2
     ) {
         // Start the timer if it's not already running
         if (!isTimerRunning) {
             isTimerRunning = true;
             startTime = Date.now(); // Store the current timestamp as the starting time
         }
-        // Create a "Has guanyat" text
+
+        // Create a "You Win!" text
         const winText = new PIXI.Text("Has guanyat!", {
             fontSize: 48,
             fill: 0xffffff, // White color
