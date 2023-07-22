@@ -84,7 +84,18 @@ function checkCollision(spriteA, element) {
         return undefined;
     }
 }
+function checkElementCollision(sprite, elements) {
+    for (const element of elements) {
+        const collisionY = checkCollision(sprite, element);
+        if (collisionY !== undefined) {
+            // Stop the player from falling
+            sprite.velocity.y = 0;
+            return collisionY;
+        }
+    }
 
+    return undefined;
+}
 // Añadimos variables para rastrear el estado del movimiento y la dirección anterior
 let isMoving = false;
 let prevPlayerDirection = 0;
