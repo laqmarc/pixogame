@@ -90,6 +90,8 @@ function checkElementCollision(sprite, elements) {
         if (collisionY !== undefined) {
             // Stop the player from falling
             sprite.velocity.y = 0;
+            // Set the player's y position to the top of the element
+            sprite.y = collisionY - sprite.height;
             return collisionY;
         }
     }
