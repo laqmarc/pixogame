@@ -4,6 +4,9 @@ const app = new PIXI.Application({
     height: 600,
     backgroundColor: 0xCCCCCC, // Set background color to light gray
 });
+const canvas = app.view;
+canvas.setAttribute('willReadFrequently', 'true');
+
 document.body.appendChild(app.view);
 
 // Load the player texture and animation frames
