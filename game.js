@@ -91,7 +91,7 @@ function checkElementCollision(sprite, elements) {
             // Stop the player from falling
             sprite.velocity.y = 0;
             // Set the player's y position to the top of the element
-            sprite.y = collisionY - sprite.height;
+            sprite.y = collisionY - sprite.height + 1;
             return collisionY;
         }
     }
@@ -99,17 +99,23 @@ function checkElementCollision(sprite, elements) {
     return undefined;
 }
 
+
 function update() {
     // Check for collisions with elements
-    const collisionY = checkElementCollision(player, elements);
+    const collisionY = checkElementCollision(sprite, elements);
     if (collisionY !== undefined) {
         // Stop the player from falling
-        player.velocity.y = 0;
+        sprite.velocity.y = 0;
+        // Set the player's y position to the top of the element
+        sprite.y = collisionY - sprite.height + 1;
     }
 
     // Update the player's position
     player.x += player.velocity.x;
     player.y += player.velocity.y;
+
+
+    
 }
 
 // Añadimos variables para rastrear el estado del movimiento y la dirección anterior
