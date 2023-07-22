@@ -16,8 +16,6 @@
 
 ## About The Project
 
-![Screen Shot](images/screenshot.png)
-
 De moment un petit joc de plataformes on hi volem posar nivells.
 
 ## Built With
