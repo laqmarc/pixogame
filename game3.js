@@ -82,39 +82,100 @@ function update() {
             jugador.y = 550; // Set the player back to the ground level
         }
     }
-        // Check if the player is above any element
-        let isAboveElement = false;
-        for (const element of elements) {
-            if (element.collision && checkCollision(jugador, element)) {
-                isAboveElement = true;
-                break;
+
+    // Check if the player is above any element
+    let isAboveElement = false;
+    for (const element of elements) {
+        if (element.collision && checkCollision(jugador, element)) {
+            isAboveElement = true;
+            // Check if the player is below the element
+            if (jugador.y + jugador.height <= element.y + 2) {
+                jugador.y = element.y - jugador.height; // Prevent the player from moving upwards into the element
             }
+            break;
         }
-    
-        // Apply gravity when the player is not jumping and not above any element
-        if (!isJumping && !isAboveElement) {
-            isFalling = true;
-            jugador.y += gravity;
-        }
-    
-        // Check if the player has reached the ground or is above an element
-        if (jugador.y >= 600) { // Adjust this value based on the ground level
-            jugador.y = 600; // Set the player back to the ground level
-            isJumping = false; // Reset the jump flag
-            jugador.jumpVelocity = 0; // Reset the jump velocity
-            isFalling = false; // Reset the falling flag when reaching the ground
-        }
-    
-        // Reset the falling flag when the player is above an element
-        if (isAboveElement) {
-            isFalling = false;
-        }
-    
-        // Adjust the gravity when falling outside an element
-        if (isFalling) {
-            jugador.y += gravity * 5;
-        }
-}
+    }
+
+    // Apply gravity when the player is not jumping and not above any element
+    if (!isJumping && !isAboveElement) {
+        isFalling = true;
+        jugador.y += gravity * 2; // Multiply gravity by 2 to make the player fall faster
+    }
+
+    // Check if the player has reached the ground or is above an element
+    if (jugador.y >= 600) { // Adjust this value based on the ground level
+        jugador.y = 600; // Set the player back to the ground level
+        isJumping = false; // Reset the jump flag
+        jugador.jumpVelocity = 0; // Reset the jump velocity
+        isFalling = false; // Reset the falling flag when reaching the ground
+    }
+
+    // Reset the falling flag when the player is above an element
+    if (isAboveElement) {
+        isFalling = false;
+    }
+
+    // Adjust the gravity when falling outside an element
+    if (isFalling) {
+        jugador.y += gravity * 5;
+    }
+
+       // New collision detection logic
+       let isCollidingTop = false;
+       let isCollidingBottom = false;
+       let isCollidingLeft = false;
+       let isCollidingRight = false;
+       let collidingElement = null; // Variable to store the colliding element
+   
+       for (const element of elements) {
+           if (element.collision && checkCollision(jugador, element)) {
+               const ab = jugador.getBounds();
+               const bb = element.getBounds();
+   
+               // Check collision from the top
+               if (ab.y + ab.height >= bb.y && ab.y + ab.height - jugador.jumpVelocity <= bb.y) {
+                   isCollidingTop = true;
+               }
+   
+               // Check collision from the bottom
+               if (ab.y <= bb.y + bb.height && ab.y - jugador.jumpVelocity >= bb.y + bb.height) {
+                   isCollidingBottom = true;
+                   collidingElement = element; // Store the colliding element
+               }
+   
+               // Check collision from the left
+               if (ab.x + ab.width >= bb.x && ab.x + ab.width - jugador.jumpVelocity <= bb.x) {
+                   isCollidingLeft = true;
+               }
+   
+               // Check collision from the right
+               if (ab.x <= bb.x + bb.width && ab.x - jugador.jumpVelocity >= bb.x + bb.width) {
+                   isCollidingRight = true;
+               }
+           }
+       }
+   
+       // Handle collisions
+       if (isCollidingTop) {
+           jugador.y = collidingElement.y - jugador.height;
+           isJumping = false;
+           jugador.jumpVelocity = 0;
+       }
+   
+       if (isCollidingBottom) {
+           jugador.y = collidingElement.y + collidingElement.height;
+           isJumping = false;
+           jugador.jumpVelocity = 0;
+       }
+   
+       if (isCollidingLeft) {
+           jugador.x = collidingElement.x - jugador.width;
+       }
+   
+       if (isCollidingRight) {
+           jugador.x = collidingElement.x + collidingElement.width;
+       }
+   }
 
 
 
@@ -151,9 +212,26 @@ function checkCollision(spriteA, spriteB) {
     const ab = spriteA.getBounds();
     const bb = spriteB.getBounds();
 
-    return ab.x + ab.width > bb.x && ab.x < bb.x + bb.width &&
-        ab.y + ab.height > bb.y && ab.y < bb.y + bb.height;
+    const playerBottom = ab.y + ab.height;
+    const playerTop = ab.y;
+    const playerRight = ab.x + ab.width;
+    const playerLeft = ab.x;
+
+    const elementTop = bb.y;
+    const elementBottom = bb.y + bb.height;
+    const elementRight = bb.x + bb.width;
+    const elementLeft = bb.x;
+
+    const isCollidingFromTop = playerBottom > elementTop && playerTop < elementTop && playerRight > elementLeft && playerLeft < elementRight;
+    const isCollidingFromBottom = playerTop < elementBottom && playerBottom > elementBottom && playerRight > elementLeft && playerLeft < elementRight;
+    const isCollidingFromLeft = playerRight > elementLeft && playerLeft < elementLeft && playerBottom > elementTop && playerTop < elementBottom;
+    const isCollidingFromRight = playerLeft < elementRight && playerRight > elementRight && playerBottom > elementTop && playerTop < elementBottom;
+
+    return isCollidingFromTop || isCollidingFromBottom || isCollidingFromLeft || isCollidingFromRight;
 }
+
+
+
 
 // Main loop for collision detection
 app.ticker.add(() => {
